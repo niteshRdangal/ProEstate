@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import {Flex, Box, Button, Text} from '@chakra-ui/react';
+import Property from "../Components/Property";
+import {baseUrl, Api} from '../utility/Api';
 
-
-const Types = ({type, imageUrl, title, details,linkName,buttonText}) => (
+const PropertyTypes = ({type, imageUrl, title, details,linkName,buttonText}) => (
   <Flex flexWrap="wrap" justifyContent="center" alignItems="center" m="10"> {/*m stands for margin*/}
     <Image src={imageUrl} width = {500} height= {300} alt="banner" />
     <Box p="5">
@@ -17,12 +18,12 @@ const Types = ({type, imageUrl, title, details,linkName,buttonText}) => (
   </Flex>
 )
 
-export default function Home() {
+export default function Home({propertiesForSale, propertiesForRent}) {
+  console.log(propertiesForRent, propertiesForSale)
   return (
     <div >
-      <h1>Hello world</h1>
 
-      <Types
+      <PropertyTypes
         type = "Property To Rent"
         title = "Rental Property For you"
         details = "Explore Your future Rental"
@@ -31,7 +32,11 @@ export default function Home() {
         imageUrl = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
       />
 
-      <Types
+      <Flex flexWrap = "wrap">
+      {propertiesForRent.map((property) => <Property property={property} key={property.id} />)}
+      </Flex>
+
+      <PropertyTypes
       type = "Property To Buy"
       title = "Your Dream Property"
       details = "Explore Your future Property"
@@ -40,6 +45,25 @@ export default function Home() {
       imageUrl = "https://images.unsplash.com/photo-1513880989635-6eb491ce7f5b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80"
     />
 
+    <Flex flexWrap = "wrap">
+    {propertiesForSale.map((property) => <Property property={property} key={property.id} />)}
+    </Flex>
+
+
+
     </div>
   )
+}
+
+export async function getStaticProps(){
+  {/*This is where we will access the api calls*/ }
+  const propertyForSale = await Api(`${baseUrl}/properties/list?locationExternalIDs=5002&purpose=for-sale&hitsPerPage=6`);
+  const propertyForRent = await Api(`${baseUrl}/properties/list?locationExternalIDs=5002&purpose=for-rent&hitsPerPage=6`);
+
+  return {
+    props : {
+      propertiesForSale : propertyForSale?.hits,
+      propertiesForRent : propertyForRent?.hits,
+    },
+  };
 }
